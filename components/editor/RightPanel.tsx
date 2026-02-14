@@ -1,5 +1,7 @@
 "use client"
 
+import { useRef } from "react"
+
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { HistoryPanel } from "@/components/editor/HistoryPanel"
@@ -16,7 +18,30 @@ import { useEditorStore } from "@/lib/store"
 import { cn } from "@/lib/utils"
 
 export function RightPanelContent() {
-    const { selectedTheme, setTheme, generateImage, isGenerating } = useEditorStore()
+    const {
+        selectedTheme,
+        setTheme,
+        isGenerating,
+        humanCount,
+        setHumanCount,
+        faceReferenceImage,
+        setFaceReferenceImage,
+        faceConsistency,
+        toggleFaceConsistency
+    } = useEditorStore()
+
+    const faceInputRef = useRef<HTMLInputElement>(null)
+
+    const handleFaceUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (file) {
+            const reader = new FileReader()
+            reader.onload = (event) => {
+                setFaceReferenceImage(event.target?.result as string)
+            }
+            reader.readAsDataURL(file)
+        }
+    }
 
     const themes = [
         { name: "Minimal", preview: "bg-slate-100 dark:bg-slate-800", textColor: "text-slate-900 dark:text-slate-100" },
@@ -33,12 +58,12 @@ export function RightPanelContent() {
         <div className="flex flex-col h-full w-full bg-background/50">
             <Tabs defaultValue="edit" className="flex flex-col h-full w-full">
                 <div className="px-4 py-3 border-b border-border/50">
-                    <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="edit" className="text-xs">
+                    <TabsList className="grid w-full grid-cols-2 bg-background shadow-skeuo-inner rounded-xl p-1.5 h-auto">
+                        <TabsTrigger value="edit" className="text-xs rounded-lg py-2 data-[state=active]:shadow-skeuo data-[state=active]:bg-background data-[state=active]:text-primary transition-all">
                             <Palette className="size-3.5 mr-2" />
                             Edit
                         </TabsTrigger>
-                        <TabsTrigger value="history" className="text-xs">
+                        <TabsTrigger value="history" className="text-xs rounded-lg py-2 data-[state=active]:shadow-skeuo data-[state=active]:bg-background data-[state=active]:text-primary transition-all">
                             <Clock className="size-3.5 mr-2" />
                             History
                         </TabsTrigger>
@@ -62,11 +87,11 @@ export function RightPanelContent() {
                                                 key={theme.name}
                                                 onClick={() => setTheme(theme.name)}
                                                 className={cn(
-                                                    "group relative h-20 rounded-xl border text-xs font-medium transition-all duration-200 text-left p-3 flex flex-col justify-end overflow-hidden",
+                                                    "group relative h-20 rounded-xl text-xs font-medium transition-all duration-200 text-left p-3 flex flex-col justify-end overflow-hidden",
                                                     theme.preview,
                                                     selectedTheme === theme.name
-                                                        ? "ring-2 ring-primary ring-offset-2 scale-[1.02] shadow-md"
-                                                        : "hover:scale-[1.02] hover:shadow-sm border-transparent"
+                                                        ? "shadow-skeuo-pressed ring-2 ring-primary ring-offset-2 scale-[0.98]"
+                                                        : "shadow-skeuo hover:shadow-skeuo-pressed hover:-translate-y-0.5 active:translate-y-0 border-none"
                                                 )}
                                             >
                                                 <span className={cn("relative z-10 font-bold", theme.textColor)}>
@@ -99,22 +124,58 @@ export function RightPanelContent() {
                                             { label: "2 People", icon: Users },
                                             { label: "Group", icon: Users },
                                         ].map((item, i) => (
-                                            <Button key={i} variant="outline" size="sm" className="h-20 flex-col gap-2 hover:bg-accent/50 hover:border-primary/30">
-                                                <item.icon className="size-5 text-muted-foreground" />
+                                            <Button
+                                                key={i}
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => setHumanCount(humanCount === item.label ? null : item.label)}
+                                                className={cn(
+                                                    "h-20 flex-col gap-2 transition-all border-none",
+                                                    humanCount === item.label
+                                                        ? "shadow-skeuo-pressed bg-primary/5 text-primary ring-1 ring-primary/10"
+                                                        : "shadow-skeuo hover:shadow-skeuo-pressed hover:-translate-y-0.5 active:translate-y-0 text-muted-foreground bg-background"
+                                                )}
+                                            >
+                                                <item.icon className={cn("size-5", humanCount === item.label ? "text-primary" : "text-muted-foreground")} />
                                                 <span className="text-xs font-medium">{item.label}</span>
                                             </Button>
                                         ))}
                                     </div>
 
-                                    <Button variant="secondary" className="w-full border-dashed border-2 bg-transparent hover:bg-accent">
-                                        <Upload className="mr-2 size-4" />
-                                        Upload Face Reference
-                                    </Button>
+                                    <input type="file" ref={faceInputRef} className="hidden" accept="image/*" onChange={handleFaceUpload} />
+
+                                    {faceReferenceImage ? (
+                                        <div className="relative w-full h-24 rounded-xl overflow-hidden shadow-skeuo group">
+                                            <img src={faceReferenceImage} alt="Face Ref" className="w-full h-full object-cover" />
+                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                                <Button size="sm" variant="secondary" className="h-7 text-xs" onClick={() => faceInputRef.current?.click()}>Change</Button>
+                                                <Button size="icon" variant="destructive" className="h-7 w-7" onClick={() => setFaceReferenceImage(null)}>x</Button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <Button
+                                            variant="secondary"
+                                            className="w-full h-12 shadow-skeuo hover:shadow-skeuo-pressed active:shadow-skeuo-pressed border-none bg-background text-muted-foreground hover:text-foreground transition-all"
+                                            onClick={() => faceInputRef.current?.click()}
+                                        >
+                                            <Upload className="mr-2 size-4" />
+                                            Upload Face Reference
+                                        </Button>
+                                    )}
 
                                     <div className="flex items-center gap-2 pt-2">
                                         <span className="text-xs text-muted-foreground">Face Consistency</span>
-                                        <div className="h-5 w-9 bg-muted rounded-full ml-auto relative cursor-pointer hover:bg-muted/80">
-                                            <div className="absolute left-1 top-1 size-3 bg-background rounded-full shadow-sm" />
+                                        <div
+                                            className={cn(
+                                                "h-5 w-9 rounded-full ml-auto relative cursor-pointer transition-colors shadow-inner",
+                                                faceConsistency ? "bg-primary" : "bg-muted"
+                                            )}
+                                            onClick={toggleFaceConsistency}
+                                        >
+                                            <div className={cn(
+                                                "absolute top-1 size-3 bg-background rounded-full shadow-sm transition-all",
+                                                faceConsistency ? "left-5" : "left-1"
+                                            )} />
                                         </div>
                                     </div>
                                 </div>

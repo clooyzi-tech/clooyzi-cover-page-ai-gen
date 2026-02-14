@@ -3,12 +3,12 @@
 import { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight, Maximize2, ZoomIn, ZoomOut, Download, Share2, Pencil, Eraser } from "lucide-react"
+import { ChevronLeft, ChevronRight, Maximize2, ZoomIn, ZoomOut, Download, Share2, Pencil, Eraser, Coins } from "lucide-react"
 import { useEditorStore } from "@/lib/store"
 import { cn } from "@/lib/utils"
 
 export function Canvas() {
-    const { selectedRatio, selectedPlatform, selectedSizeLabel, generatedImage, isGenerating, isDrawingMode, toggleDrawingMode, selectedColor } = useEditorStore()
+    const { selectedRatio, selectedPlatform, selectedSizeLabel, generatedImage, isGenerating, isDrawingMode, toggleDrawingMode, selectedColor, tokens, nextDesign, prevDesign } = useEditorStore()
     const [zoom, setZoom] = useState(100)
 
     // Drawing Refs
@@ -128,7 +128,7 @@ export function Canvas() {
 
             {/* Main Canvas Container with Animation (Fixed Zoom Behavior) */}
             <motion.div
-                className="relative z-10 shadow-skeuo rounded-xl overflow-hidden border-[6px] border-background ring-1 ring-black/5 bg-background origin-center"
+                className="relative z-10 shadow-skeuo rounded-xl border-[6px] border-background ring-1 ring-black/5 bg-background origin-center"
                 initial={false}
                 animate={{
                     aspectRatio: selectedRatio.replace(':', '/'),
@@ -142,7 +142,7 @@ export function Canvas() {
             >
 
                 {/* Canvas Content */}
-                <div className="w-full h-full bg-neutral-900 shadow-skeuo-inner flex items-center justify-center text-neutral-500 relative overflow-hidden">
+                <div className="w-full h-full bg-neutral-900 shadow-skeuo-inner rounded-lg flex items-center justify-center text-neutral-500 relative overflow-hidden">
 
                     {/* HTML5 Drawing Canvas Layer */}
                     <canvas
@@ -224,30 +224,36 @@ export function Canvas() {
                         </Button>
                     </div>
                 </div>
+
+                {/* Slider Controls (Attached to Frame) */}
+                <div className="absolute -left-14 top-1/2 z-50" style={{ transform: `translateY(-50%) scale(${100 / zoom})` }}>
+                    <div className="pointer-events-auto bg-black/20 backdrop-blur-md border border-white/10 p-1 rounded-2xl shadow-xl hover:bg-black/30 transition-colors">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={prevDesign}
+                            className="h-10 w-10 rounded-xl text-white hover:bg-white/20 hover:text-white"
+                        >
+                            <ChevronLeft className="size-6" />
+                        </Button>
+                    </div>
+                </div>
+
+                <div className="absolute -right-14 top-1/2 z-50" style={{ transform: `translateY(-50%) scale(${100 / zoom})` }}>
+                    <div className="pointer-events-auto bg-black/20 backdrop-blur-md border border-white/10 p-1 rounded-2xl shadow-xl hover:bg-black/30 transition-colors">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={nextDesign}
+                            className="h-10 w-10 rounded-xl text-white hover:bg-white/20 hover:text-white"
+                        >
+                            <ChevronRight className="size-6" />
+                        </Button>
+                    </div>
+                </div>
             </motion.div>
 
-            {/* Slider Controls with Backboard BG */}
-            <div className="absolute inset-x-8 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none z-40">
-                <div className="pointer-events-auto bg-black/20 backdrop-blur-md border border-white/10 p-1 rounded-2xl shadow-xl hover:bg-black/30 transition-colors">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-10 w-10 rounded-xl text-white hover:bg-white/20 hover:text-white"
-                    >
-                        <ChevronLeft className="size-6" />
-                    </Button>
-                </div>
 
-                <div className="pointer-events-auto bg-black/20 backdrop-blur-md border border-white/10 p-1 rounded-2xl shadow-xl hover:bg-black/30 transition-colors">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-10 w-10 rounded-xl text-white hover:bg-white/20 hover:text-white"
-                    >
-                        <ChevronRight className="size-6" />
-                    </Button>
-                </div>
-            </div>
 
             {/* Zoom Controls (Floating - Bottom Right) */}
             <div className="absolute bottom-6 right-6 flex items-center gap-2 bg-background/80 backdrop-blur-lg px-2 py-1.5 rounded-full border shadow-xl z-20">

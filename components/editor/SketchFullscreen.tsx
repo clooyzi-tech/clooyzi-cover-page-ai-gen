@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 
 export function SketchFullscreen() {
     const {
-        isSketchFullscreenOpen,
+        isSketchFullscreen,
         toggleSketchFullscreen,
         selectedColor,
         setColor,
@@ -23,7 +23,7 @@ export function SketchFullscreen() {
     const [brushSize, setBrushSize] = useState(5)
 
     useEffect(() => {
-        if (isSketchFullscreenOpen) {
+        if (isSketchFullscreen) {
             const handleResize = () => {
                 const canvas = canvasRef.current
                 if (canvas) {
@@ -37,7 +37,7 @@ export function SketchFullscreen() {
 
             return () => window.removeEventListener('resize', handleResize)
         }
-    }, [isSketchFullscreenOpen])
+    }, [isSketchFullscreen])
 
     const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
         setIsDrawing(true)
@@ -89,7 +89,7 @@ export function SketchFullscreen() {
         }
     }
 
-    if (!isSketchFullscreenOpen) return null
+    if (!isSketchFullscreen) return null
 
     return (
         <AnimatePresence>

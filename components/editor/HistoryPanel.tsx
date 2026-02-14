@@ -30,7 +30,7 @@ export function HistoryPanel() {
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
                 {history.map((item) => (
-                    <div key={item.id} className="group relative bg-muted/20 rounded-lg overflow-hidden border hover:border-primary/50 transition-all">
+                    <div key={item.id} className="group relative bg-background shadow-skeuo rounded-xl overflow-hidden transition-all hover:-translate-y-1 duration-300">
                         <div className="aspect-video w-full bg-muted relative">
                             {item.imageUrl ? (
                                 <img src={item.imageUrl} alt={item.prompt} className="w-full h-full object-cover" />

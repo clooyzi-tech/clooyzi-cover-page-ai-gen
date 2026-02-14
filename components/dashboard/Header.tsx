@@ -14,7 +14,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Image as ImageIcon, Sparkles, User, Settings, LogOut } from "lucide-react"
 import { ModeToggle } from "@/components/mode-toggle"
 
+import { useEditorStore } from "@/lib/store"
+
 export function DashboardHeader() {
+    const { tokens } = useEditorStore()
+
     return (
         <header className="sticky top-0 z-30 flex h-16 w-full items-center border-b bg-background px-4 shadow-sm md:px-6">
             <div className="flex items-center gap-2 font-bold text-lg">
@@ -26,12 +30,9 @@ export function DashboardHeader() {
 
             <div className="ml-auto flex items-center gap-4">
                 {/* Token Counter */}
-                <div className="flex items-center gap-2 rounded-full border bg-muted/50 px-3 py-1.5 text-sm font-medium">
-                    <div className="flex size-5 items-center justify-center rounded-full bg-yellow-500/20 text-yellow-600 dark:text-yellow-400">
-                        <Sparkles className="size-3" />
-                    </div>
-                    <span className="text-muted-foreground">Tokens Left:</span>
-                    <span className="font-bold">2,450</span>
+                <div className="flex items-center gap-2 rounded-full border bg-muted/50 px-3 py-1.5 text-sm font-bold shadow-sm">
+                    <div className="size-2 rounded-full bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.6)] animate-pulse" />
+                    <span>{tokens.toFixed(1)} T</span>
                 </div>
 
                 <ModeToggle />
