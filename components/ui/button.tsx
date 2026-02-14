@@ -10,16 +10,16 @@ const buttonVariants = cva(
         variants: {
             variant: {
                 default:
-                    "bg-primary text-primary-foreground shadow hover:bg-primary/90",
+                    "bg-primary text-primary-foreground shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm transition-all duration-200 rounded-xl",
                 destructive:
-                    "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
+                    "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 rounded-xl",
                 outline:
-                    "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
+                    "border-2 border-input bg-background shadow-skeuo hover:bg-accent hover:text-accent-foreground rounded-xl active:shadow-skeuo-pressed active:border-transparent",
                 secondary:
-                    "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
-                ghost: "hover:bg-accent hover:text-accent-foreground",
+                    "bg-background text-foreground shadow-skeuo hover:-translate-y-[1px] active:translate-y-[1px] active:shadow-skeuo-pressed rounded-xl border-none",
+                ghost: "hover:bg-accent hover:text-accent-foreground rounded-xl",
                 link: "text-primary underline-offset-4 hover:underline",
-                premium: "bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg hover:opacity-90 transition-all duration-300 hover:scale-[1.02]",
+                premium: "bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg hover:opacity-90 transition-all duration-300 hover:scale-[1.05] hover:shadow-purple-500/30 rounded-xl",
             },
             size: {
                 default: "h-9 px-4 py-2",

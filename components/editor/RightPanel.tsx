@@ -134,7 +134,7 @@ export function RightPanelContent() {
 
 export function RightPanel() {
     return (
-        <div className="hidden md:flex w-80 border-l border-border/50 bg-background flex flex-col h-full shadow-[-5px_0_30px_-10px_rgba(0,0,0,0.05)] z-20 shrink-0">
+        <div className="hidden md:flex w-80 bg-background flex flex-col h-full shadow-skeuo z-20 shrink-0 relative">
             <RightPanelContent />
         </div>
     )

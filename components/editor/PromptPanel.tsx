@@ -56,7 +56,7 @@ export function PromptPanel() {
     ]
 
     return (
-        <div className="border-t bg-background/95 backdrop-blur-xl flex flex-col z-20 shrink-0 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] pb-6 relative">
+        <div className="bg-background flex flex-col z-20 shrink-0 shadow-skeuo pb-6 relative">
 
             {/* COMPACT HEADER: Title | Link | Generate */}
             <div className="px-4 py-3 flex items-center justify-between gap-4 border-b bg-muted/20">
@@ -75,7 +75,7 @@ export function PromptPanel() {
                     {/* YouTube Link */}
                     <div
                         className={cn(
-                            "flex items-center gap-2.5 bg-background border px-4 py-1.5 rounded-full shadow-sm transition-all max-w-[400px] hover:border-red-500/50 hover:shadow-red-500/10 group cursor-text",
+                            "flex items-center gap-2.5 bg-background shadow-skeuo-inner px-4 py-1.5 rounded-full transition-all max-w-[400px] hover:border-red-500/50 hover:shadow-red-500/10 group cursor-text",
                             isLinkHovered || youtubeLink ? "w-full flex-1 ring-1 ring-red-500/10" : "w-[180px]"
                         )}
                         onMouseEnter={() => setIsLinkHovered(true)}
@@ -132,7 +132,7 @@ export function PromptPanel() {
 
                 {/* Unified Input Box with Gradient Border */}
                 <div className="flex-1 rounded-3xl p-[1px] bg-gradient-to-r from-pink-500/50 via-purple-500/50 to-indigo-500/50 shadow-sm opacity-90 group-hover:opacity-100 transition-opacity">
-                    <div className="flex flex-col h-full w-full rounded-[23px] bg-muted/20 focus-within:bg-background/80 transition-all overflow-hidden group min-h-[120px] relative">
+                    <div className="flex flex-col h-full w-full rounded-[23px] bg-background shadow-skeuo-inner focus-within:bg-background/80 transition-all overflow-hidden group min-h-[120px] relative">
                         <textarea
                             className="flex-1 w-full bg-transparent px-5 py-3 text-sm resize-none focus:outline-none placeholder:text-muted-foreground/40 leading-relaxed font-medium"
                             placeholder="What are we creating today?"

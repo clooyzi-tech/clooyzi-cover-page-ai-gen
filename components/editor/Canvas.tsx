@@ -128,7 +128,7 @@ export function Canvas() {
 
             {/* Main Canvas Container with Animation (Fixed Zoom Behavior) */}
             <motion.div
-                className="relative z-10 shadow-2xl rounded-sm overflow-hidden border-4 border-background ring-1 ring-border/50 bg-white origin-center"
+                className="relative z-10 shadow-skeuo rounded-xl overflow-hidden border-[6px] border-background ring-1 ring-black/5 bg-background origin-center"
                 initial={false}
                 animate={{
                     aspectRatio: selectedRatio.replace(':', '/'),
@@ -142,7 +142,7 @@ export function Canvas() {
             >
 
                 {/* Canvas Content */}
-                <div className="w-full h-full bg-neutral-900 flex items-center justify-center text-neutral-500 relative overflow-hidden">
+                <div className="w-full h-full bg-neutral-900 shadow-skeuo-inner flex items-center justify-center text-neutral-500 relative overflow-hidden">
 
                     {/* HTML5 Drawing Canvas Layer */}
                     <canvas

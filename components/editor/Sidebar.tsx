@@ -216,7 +216,7 @@ export function SidebarContent() {
 
 export function Sidebar() {
     return (
-        <div className="hidden md:flex w-64 border-r border-border/50 bg-background/50 backdrop-blur-xl flex-col h-full shadow-[5px_0_30px_-10px_rgba(0,0,0,0.1)] z-20 shrink-0">
+        <div className="hidden md:flex w-72 bg-background flex flex-col h-full shadow-skeuo z-20 shrink-0 relative">
             <SidebarContent />
         </div>
     )
