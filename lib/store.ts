@@ -1,7 +1,19 @@
 import { create } from 'zustand'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import { generateImageAction } from "@/actions/generate"
 
 export type AspectRatio = "16:9" | "9:16" | "1:1" | "4:5" | "1.91:1" | "2:3" | "3:1" | "4:1" | "2:1" | "3.5:1" | "2.63:1";
+
+export interface HistoryItem {
+    id: string;
+    imageUrl: string;
+    prompt: string;
+    timestamp: number;
+    platform: string;
+    ratio: AspectRatio;
+    sizeLabel: string;
+    style: string;
+}
 
 interface EditorState {
     // Platform & Size
@@ -17,14 +29,21 @@ interface EditorState {
     // State
     isGenerating: boolean;
     generatedImage: string | null;
-    isDrawingMode: boolean; // New state
+    isDrawingMode: boolean;
+
+    // History
+    history: HistoryItem[];
+    addToHistory: (item: HistoryItem) => void;
+    deleteFromHistory: (id: string) => void;
+    clearHistory: () => void;
+    restoreFromHistory: (item: HistoryItem) => void;
 
     // Actions
     setSize: (platform: string, ratio: AspectRatio, label: string) => void;
     setPrompt: (prompt: string) => void;
     setColor: (color: string) => void;
     setTheme: (theme: string) => void;
-    generateImage: () => void;
+    generateImage: () => Promise<void>;
     toggleDrawingMode: () => void;
 
     // Fullscreen Sketch
@@ -40,81 +59,111 @@ interface EditorState {
     setUploadedReferenceImage: (image: string | null) => void;
 }
 
-export const useEditorStore = create<EditorState>((set) => ({
-    selectedPlatform: "YouTube",
-    selectedRatio: "16:9",
-    selectedSizeLabel: "Thumbnail",
+export const useEditorStore = create<EditorState>()(
+    persist(
+        (set, get) => ({
+            selectedPlatform: "YouTube",
+            selectedRatio: "16:9",
+            selectedSizeLabel: "Thumbnail",
 
-    prompt: "",
-    selectedColor: "#ffffff",
-    selectedTheme: "Minimal",
+            prompt: "",
+            selectedColor: "#ffffff",
+            selectedTheme: "Minimal",
 
-    isGenerating: false,
-    generatedImage: null,
-    isDrawingMode: false,
+            isGenerating: false,
+            generatedImage: null,
+            isDrawingMode: false,
 
-    setSize: (platform, ratio, label) => set({
-        selectedPlatform: platform,
-        selectedRatio: ratio,
-        selectedSizeLabel: label
-    }),
+            history: [],
+            addToHistory: (item) => set((state) => ({ history: [item, ...state.history] })),
+            deleteFromHistory: (id) => set((state) => ({ history: state.history.filter((i) => i.id !== id) })),
+            clearHistory: () => set({ history: [] }),
+            restoreFromHistory: (item) => set({
+                prompt: item.prompt,
+                generatedImage: item.imageUrl,
+                selectedPlatform: item.platform,
+                selectedRatio: item.ratio,
+                selectedSizeLabel: item.sizeLabel,
+                selectedTheme: item.style
+            }),
 
-    setPrompt: (prompt) => set({ prompt }),
+            setSize: (platform, ratio, label) => set({
+                selectedPlatform: platform,
+                selectedRatio: ratio,
+                selectedSizeLabel: label
+            }),
 
-    setColor: (color) => set({ selectedColor: color }),
+            setPrompt: (prompt) => set({ prompt }),
 
-    setTheme: (theme) => set({ selectedTheme: theme }),
+            setColor: (color) => set({ selectedColor: color }),
 
-    generateImage: async () => {
-        set({ isGenerating: true });
+            setTheme: (theme) => set({ selectedTheme: theme }),
 
-        try {
-            const state = useEditorStore.getState();
+            generateImage: async () => {
+                set({ isGenerating: true });
 
-            // Construct params from state
-            // If aspect ratio is a string like "16:9", we should map it to dimensions or just pass width/height
-            // For now, let's just parse the size string "1280x720" if available, or default
-            // But wait, state doesn't store "1280x720" directly in a variable, it's just in the preset list?
-            // Actually `setSize` updates `selectedSizeLabel` and `selectedRatio`. 
-            // We should arguably store the dimensions too or look them up. 
-            // For this MVP, I'll pass default 1024x1024 if not found, or maybe just pass the ratio string to the action?
-            // The action interface asks for width/height.
+                try {
+                    const state = get();
+                    const result = await generateImageAction({
+                        prompt: state.prompt,
+                        width: 1024,
+                        height: 1024,
+                        style: state.selectedTheme,
+                        referenceImage: state.sketchReferenceImage || state.uploadedReferenceImage || undefined
+                    });
 
-            // Let's check if we can get dimensions. The `platforms` array is inside the component, difficult to access here?
-            // We might want to store `width` and `height` in the store when `setSize` is called.
-            // For now, I will hardcode a standard size or parse it if I can? 
-            // Actually, I'll update `setSize` to store width/height in a subsequent step if needed.
-            // For now, I'll just send 1024x1024 mock.
+                    if (result.success && result.imageUrl) {
+                        set({ generatedImage: result.imageUrl });
 
-            const result = await generateImageAction({
-                prompt: state.prompt,
-                width: 1024,
-                height: 1024,
-                style: state.selectedTheme,
-                referenceImage: state.sketchReferenceImage || state.uploadedReferenceImage || undefined
-            });
+                        // Auto-save to history
+                        const newItem: HistoryItem = {
+                            id: Date.now().toString(),
+                            imageUrl: result.imageUrl,
+                            prompt: state.prompt || "Untitled",
+                            timestamp: Date.now(),
+                            platform: state.selectedPlatform,
+                            ratio: state.selectedRatio,
+                            sizeLabel: state.selectedSizeLabel,
+                            style: state.selectedTheme
+                        };
 
-            if (result.success && result.imageUrl) {
-                set({ generatedImage: result.imageUrl });
-            } else {
-                console.error("Generation failed:", result.error);
-            }
-        } catch (error) {
-            console.error("Generation error:", error);
-        } finally {
-            set({ isGenerating: false });
+                        set((state) => ({ history: [newItem, ...state.history] }));
+
+                    } else {
+                        console.error("Generation failed:", result.error);
+                    }
+                } catch (error) {
+                    console.error("Generation error:", error);
+                } finally {
+                    set({ isGenerating: false });
+                }
+            },
+
+            toggleDrawingMode: () => set((state) => ({ isDrawingMode: !state.isDrawingMode })),
+
+            isSketchFullscreenOpen: false,
+            sketchReferenceImage: null,
+            toggleSketchFullscreen: () => set((state) => ({ isSketchFullscreenOpen: !state.isSketchFullscreenOpen })),
+            setSketchReferenceImage: (image) => set({ sketchReferenceImage: image }),
+
+            youtubeLink: "",
+            uploadedReferenceImage: null,
+            setYoutubeLink: (link) => set({ youtubeLink: link }),
+            setUploadedReferenceImage: (image) => set({ uploadedReferenceImage: image }),
+        }),
+        {
+            name: 'thumbnail-editor-storage',
+            partialize: (state) => ({
+                history: state.history,
+                selectedPlatform: state.selectedPlatform,
+                selectedRatio: state.selectedRatio,
+                // We persist history and minimal settings. 
+                // Don't persist large base64 images (sketchReferenceImage) to avoid quota issues?
+                // LocalStorage has 5MB limit. Base64 images can be large.
+                // Safest to persist history (if URLs) and basic settings.
+                // If history is big, we might fill it up.
+                // For now, let's persist history and basic settings.
+            }),
         }
-    },
-
-    toggleDrawingMode: () => set((state) => ({ isDrawingMode: !state.isDrawingMode })),
-
-    isSketchFullscreenOpen: false,
-    sketchReferenceImage: null,
-    toggleSketchFullscreen: () => set((state) => ({ isSketchFullscreenOpen: !state.isSketchFullscreenOpen })),
-    setSketchReferenceImage: (image) => set({ sketchReferenceImage: image }),
-
-    youtubeLink: "",
-    uploadedReferenceImage: null,
-    setYoutubeLink: (link) => set({ youtubeLink: link }),
-    setUploadedReferenceImage: (image) => set({ uploadedReferenceImage: image }),
-}))
+    )
+)
